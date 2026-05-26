@@ -1,7 +1,14 @@
+import { mkdirSync } from 'node:fs';
+import { dirname } from 'node:path';
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+
+const dbPath = process.env.DATABASE_PATH ?? 'data/todos.sqlite';
+if (dbPath !== ':memory:') {
+  mkdirSync(dirname(dbPath), { recursive: true });
+}
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
