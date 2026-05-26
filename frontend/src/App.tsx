@@ -1,11 +1,10 @@
-import { Container, Typography } from '@mui/material';
+import { Container } from '@mui/material';
+import { TodosPage } from './pages/TodosPage';
 
 function App() {
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
-      <Typography variant="h4" component="h1">
-        UITOP Todo
-      </Typography>
+      <TodosPage />
     </Container>
   );
 }
