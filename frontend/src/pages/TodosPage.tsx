@@ -1,14 +1,29 @@
-import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
 import { Box, Chip, Stack, Typography } from '@mui/material';
 import { useState } from 'react';
-import { AppLoader } from '../components/AppLoader';
+import { CreateTodoForm } from '../components/CreateTodoForm';
 import { CategorySelect } from '../components/CategorySelect';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { AppLoader } from '../components/AppLoader';
+import { TodoList } from '../components/TodoList';
+import { UndoSnackbar } from '../components/UndoSnackbar';
 import { useCategories } from '../hooks/useCategories';
+import { useTodoActions } from '../hooks/useTodoActions';
+import { useTodos } from '../hooks/useTodos';
 
 export function TodosPage() {
   const { categories, isLoading, error } = useCategories();
   const [categoryFilter, setCategoryFilter] = useState('');
+  const { todos, isLoading: isTodosLoading, error: todosError, refetch } = useTodos(categoryFilter);
+  const {
+    snackbar,
+    isSubmitting,
+    pendingCompleteId,
+    handleCreate,
+    handleDelete,
+    handleComplete,
+    handleUndo,
+    handleSnackbarClose,
+  } = useTodoActions({ refetch });
 
   if (isLoading) {
     return <AppLoader message="Loading categories…" />;
@@ -21,6 +36,12 @@ export function TodosPage() {
       </Typography>
 
       {error && <ErrorAlert message={error} />}
+
+      <CreateTodoForm
+        categories={categories}
+        isSubmitting={isSubmitting}
+        onSubmit={handleCreate}
+      />
 
       <Box sx={{ mb: 3, maxWidth: 320 }}>
         <CategorySelect
@@ -40,24 +61,23 @@ export function TodosPage() {
         </Stack>
       )}
 
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 1,
-          py: 6,
-          color: 'text.secondary',
-        }}
-      >
-        <AssignmentOutlinedIcon sx={{ fontSize: 48, opacity: 0.5 }} />
-        <Typography variant="body1">No tasks yet</Typography>
-        <Typography variant="body2">
-          {categoryFilter
-            ? 'Tasks for selected category will appear here.'
-            : 'Todo list will appear here.'}
-        </Typography>
-      </Box>
+      <TodoList
+        todos={todos}
+        isLoading={isTodosLoading}
+        error={todosError}
+        categoryFilter={categoryFilter}
+        pendingCompleteId={pendingCompleteId}
+        onToggleComplete={handleComplete}
+        onDelete={handleDelete}
+      />
+
+      <UndoSnackbar
+        open={snackbar.open}
+        message={snackbar.message}
+        severity={snackbar.severity}
+        onUndo={snackbar.undoType ? handleUndo : undefined}
+        onClose={handleSnackbarClose}
+      />
     </Box>
   );
 }

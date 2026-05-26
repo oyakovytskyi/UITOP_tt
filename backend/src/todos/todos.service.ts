@@ -66,15 +66,18 @@ export class TodosService {
       }
     }
 
-    const todos = await this.todoRepo.find({
-      where:
-        query.category !== undefined
-          ? { categoryId: query.category }
-          : undefined,
-      relations: ['category'],
-      order: { id: 'ASC' },
-    });
+    const qb = this.todoRepo
+      .createQueryBuilder('todo')
+      .innerJoinAndSelect('todo.category', 'category')
+      .orderBy('todo.id', 'ASC');
 
+    if (query.category !== undefined) {
+      qb.andWhere('todo.categoryId = :categoryId', {
+        categoryId: query.category,
+      });
+    }
+
+    const todos = await qb.getMany();
     return todos.map((todo) => this.toResponseDto(todo));
   }
 
@@ -90,7 +93,12 @@ export class TodosService {
 
     todo.completed = dto.completed;
     const saved = await this.todoRepo.save(todo);
-    return this.toResponseDto(saved);
+    const reloaded = await this.todoRepo.findOne({
+      where: { id: saved.id },
+      relations: ['category'],
+    });
+
+    return this.toResponseDto(reloaded!);
   }
 
   async remove(id: number): Promise<void> {

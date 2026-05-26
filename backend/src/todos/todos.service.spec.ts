@@ -35,6 +35,7 @@ describe('TodosService', () => {
             find: jest.fn(),
             findOne: jest.fn(),
             remove: jest.fn(),
+            createQueryBuilder: jest.fn(),
           },
         },
         {
@@ -98,28 +99,43 @@ describe('TodosService', () => {
       const result = await service.findAll({ category: 99 });
 
       expect(result).toEqual([]);
-      expect(jest.mocked(todoRepo.find)).not.toHaveBeenCalled();
+      expect(todoRepo.createQueryBuilder).not.toHaveBeenCalled();
     });
 
     it('returns todos filtered by category', async () => {
       categoryRepo.findOne.mockResolvedValue(workCategory);
-      todoRepo.find.mockResolvedValue([savedTodo]);
+      const queryBuilder = {
+        innerJoinAndSelect: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue([savedTodo]),
+      };
+      todoRepo.createQueryBuilder = jest
+        .fn()
+        .mockReturnValue(queryBuilder) as typeof todoRepo.createQueryBuilder;
 
       const result = await service.findAll({ category: 1 });
 
-      expect(jest.mocked(todoRepo.find)).toHaveBeenCalledWith({
-        where: { categoryId: 1 },
-        relations: ['category'],
-        order: { id: 'ASC' },
-      });
+      expect(todoRepo.createQueryBuilder).toHaveBeenCalledWith('todo');
+      expect(queryBuilder.innerJoinAndSelect).toHaveBeenCalledWith(
+        'todo.category',
+        'category',
+      );
+      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+        'todo.categoryId = :categoryId',
+        { categoryId: 1 },
+      );
       expect(result).toHaveLength(1);
     });
   });
 
   describe('update', () => {
     it('updates todo completed status', async () => {
-      todoRepo.findOne.mockResolvedValue({ ...savedTodo });
-      todoRepo.save.mockResolvedValue({ ...savedTodo, completed: true });
+      const updatedTodo = { ...savedTodo, completed: true };
+      todoRepo.findOne
+        .mockResolvedValueOnce({ ...savedTodo })
+        .mockResolvedValueOnce(updatedTodo);
+      todoRepo.save.mockResolvedValue(updatedTodo);
 
       const result = await service.update(1, { completed: true });
 

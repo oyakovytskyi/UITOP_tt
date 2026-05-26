@@ -18,7 +18,7 @@ export class Todo {
   @Column({ default: false })
   completed: boolean;
 
-  @Column()
+  @Column({ type: 'integer' })
   categoryId: number;
 
   @ManyToOne(() => Category, { onDelete: 'RESTRICT' })
