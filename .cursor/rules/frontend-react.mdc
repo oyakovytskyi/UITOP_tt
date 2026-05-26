@@ -1,0 +1,43 @@
+---
+description: Vite + React + MUI frontend architecture and conventions
+globs: frontend/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Frontend (Vite + React + MUI)
+
+## Folder structure
+
+```
+frontend/src/
+  pages/       # route screens (e.g. TodosPage)
+  components/  # reusable UI (TodoItem, TodoForm, AppLoader, EmptyState)
+  api/         # Axios client + endpoint functions
+  hooks/       # data/UI hooks (useTodos, useUndoSnackbar)
+  utils/       # pure helpers — use // for complex logic
+  constants/   # API URLs, limits (MAX_TASKS_PER_CATEGORY = 5)
+  types/       # TS interfaces matching backend DTOs
+```
+
+## Stack
+
+- React functional components + TypeScript
+- MUI for layout, forms, Snackbar, CircularProgress, empty/error states
+- React Hook Form for the create-todo form
+- Axios only in `api/` — hooks/components call api modules, never raw axios in JSX
+- React Testing Library + Vitest for tests
+
+## Patterns
+
+```tsx
+// ✅ pages compose only
+const { todos, isLoading, error } = useTodos(categoryFilter);
+
+// ✅ api/todosApi.ts — all HTTP here
+export const createTodo = (data: CreateTodoDto) => api.post('/todos', data);
+```
+
+- Pages compose components and hooks; no fetch logic or validation rules in pages
+- Shared wrappers (`LoadingOverlay`, `ErrorMessage`) live in `components/`
+- Undo snackbar: centralize timer/restore in `useUndoSnackbar`, do not duplicate in handlers
+- Map backend errors to user messages via a helper in `utils/` or `api/`

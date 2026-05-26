@@ -1,0 +1,58 @@
+---
+description: NestJS + SQLite backend architecture, Swagger, and error handling
+globs: backend/**/*.ts
+alwaysApply: false
+---
+
+# Backend (NestJS + SQLite)
+
+## Folder structure
+
+```
+backend/src/
+  main.ts              # bootstrap + SwaggerModule.setup
+  app.module.ts
+  todos/
+    todos.module.ts
+    todos.controller.ts
+    todos.service.ts
+    dto/
+    entities/
+  categories/
+    categories.module.ts
+    categories.controller.ts
+    categories.service.ts
+  common/
+    filters/           # HttpExceptionFilter — consistent JSON shape
+    pipes/
+    constants/         # MAX_TASKS_PER_CATEGORY = 5
+```
+
+## Stack
+
+- NestJS feature modules: controller → service → repository/entity; no fat controllers
+- SQLite via TypeORM
+- Swagger via `@nestjs/swagger` — `@ApiTags`, `@ApiOperation`, `@ApiResponse` on every endpoint; `@ApiProperty` on DTOs; UI at `/api` (auto-updated from decorators, no manual spec files)
+- `class-validator` on DTOs + global `ValidationPipe`
+
+## Endpoints
+
+| Method | Path | Notes |
+|--------|------|-------|
+| POST | `/todos` | 400 if category has 5 tasks |
+| GET | `/todos?category=` | optional filter |
+| PATCH | `/todos/:id` | update completed status |
+| DELETE | `/todos/:id` | hard delete |
+| GET | `/categories` | list for dropdown |
+
+## Error contract
+
+Every failure returns frontend-displayable JSON:
+
+```json
+{ "statusCode": 400, "message": "Category \"Work\" already has 5 tasks.", "error": "Bad Request" }
+```
+
+- Use `BadRequestException('specific message')` in services
+- Global exception filter for unexpected errors → `{ statusCode: 500, message: 'Internal server error' }`
+- Document error cases with `@ApiResponse({ status: 400, description: '...' })`

@@ -1,0 +1,40 @@
+---
+description: Monorepo-wide standards for the UITOP Todo test task
+alwaysApply: true
+---
+
+# Project Overview
+
+## Repo layout
+
+- `frontend/` — Vite + React + TypeScript
+- `backend/` — NestJS + SQLite
+- Root `README.md` with run instructions
+
+## Code quality
+
+- Clear, maintainable code first: small focused files, descriptive names
+- No business logic in UI components — keep logic in `api/`, `hooks/`, `utils/`, or backend services
+- Separation of concerns: pages compose; they do not fetch, validate, or transform data inline
+
+## Reusable components
+
+If the same UI appears twice (loader, empty state, error banner, todo row, category select), extract to `components/` and reuse. Do not copy-paste.
+
+## Comments
+
+Use `//` only for non-obvious business logic or complex algorithms. Do not comment trivial code.
+
+## Error UX contract
+
+- Backend returns human-readable `message` strings in JSON error responses
+- Frontend displays those messages (snackbar/alert) — never swallow errors silently
+
+## Feature checklist (test-task.md)
+
+- Create todos with text + category
+- Mark tasks completed; completed tasks stay 5s with Undo snackbar
+- Delete tasks with Undo snackbar
+- Filter by category (or "All")
+- Max 5 tasks per category (backend enforces, frontend shows error)
+- Loading, error, and empty states on the todos list

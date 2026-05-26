@@ -1,0 +1,23 @@
+---
+description: Frontend and backend testing conventions
+globs: "**/*.{test,spec}.{ts,tsx}"
+alwaysApply: false
+---
+
+# Testing
+
+## Frontend (React Testing Library + Vitest)
+
+- Test user-visible behavior, not implementation details
+- Examples: click checkbox → task marked done; delete → snackbar with Undo appears
+- Use `screen.getByRole`, `userEvent` — avoid testing internal state or hook calls directly
+
+## Backend (NestJS @nestjs/testing)
+
+- Unit test services: 5-task-per-category limit, validation edge cases
+- E2e test endpoints: POST/GET/PATCH/DELETE `/todos`, GET `/categories`
+
+## File conventions
+
+- Name files `*.test.tsx` (frontend) or `*.spec.ts` (backend)
+- Colocate next to source or mirror structure in `__tests__/`
