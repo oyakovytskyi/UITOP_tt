@@ -3,16 +3,20 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CategoriesModule } from './categories/categories.module';
+import { TodosModule } from './todos/todos.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'sqlite',
-      database: process.env.DATABASE_PATH ?? 'data/todos.sqlite',
-      autoLoadEntities: true,
-      synchronize: true,
+    TypeOrmModule.forRootAsync({
+      useFactory: () => ({
+        type: 'sqlite',
+        database: process.env.DATABASE_PATH ?? 'data/todos.sqlite',
+        autoLoadEntities: true,
+        synchronize: true,
+      }),
     }),
     CategoriesModule,
+    TodosModule,
   ],
   controllers: [AppController],
   providers: [AppService],

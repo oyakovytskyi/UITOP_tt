@@ -4,6 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 const dbPath = process.env.DATABASE_PATH ?? 'data/todos.sqlite';
 if (dbPath !== ':memory:') {
@@ -17,6 +18,8 @@ async function bootstrap() {
     origin: process.env.CORS_ORIGIN ?? true,
     credentials: true,
   });
+
+  app.useGlobalFilters(new HttpExceptionFilter());
 
   app.useGlobalPipes(
     new ValidationPipe({
